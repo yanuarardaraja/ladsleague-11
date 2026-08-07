@@ -88,9 +88,10 @@ function paintBase(ctx, cfg, eyebrow, logo) {
   ctx.fillStyle = C.pitch;
   ctx.fillText(label, 88, 106);
 
-  // nama liga
+  // nama liga — lebar dibatasi lebih ketat supaya tetap ada ruang untuk logo
+  // yang sekarang 1.5x tinggi teks (lihat bawah).
   const title = (cfg.name || "LIGA").toUpperCase();
-  const ts = fitText(ctx, title, 800, 108, DISP);
+  const ts = fitText(ctx, title, 750, 108, DISP);
   ctx.fillStyle = C.chalk;
   ctx.font = `400 ${ts}px ${DISP}`;
   ctx.fillText(title, 64, 190);
@@ -99,9 +100,9 @@ function paintBase(ctx, cfg, eyebrow, logo) {
   ctx.font = `500 30px ${MONO}`;
   ctx.fillText((cfg.season || "").toUpperCase(), 66, 244);
 
-  // logo — kanan atas, sejajar & setinggi tulisan nama liga
+  // logo — kanan atas, sejajar dengan tulisan nama liga, 1.5x tingginya
   if (logo && logo.width && logo.height) {
-    const logoH = ts;
+    const logoH = ts * 1.5;
     const logoW = logoH * (logo.width / logo.height);
     ctx.drawImage(logo, W - 64 - logoW, 190 - logoH / 2, logoW, logoH);
   }
