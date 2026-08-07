@@ -4,10 +4,10 @@ export const W = 1080;
 export const H = 1350;
 
 const C = {
-  pitch: "#071a11",
-  chalk: "#eef6f0",
-  slate: "#7e9c8b",
-  lime: "#c9f24e",
+  pitch: "#1a0808",
+  chalk: "#f6ece6",
+  slate: "#ad8a8a",
+  lime: "#c8102e",
   fuel: "#ff5a3c",
 };
 
@@ -41,19 +41,19 @@ function skewBar(ctx, x, y, w, h, fill, skew = 0.18) {
 function paintBase(ctx, cfg, eyebrow) {
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, "#06180f");
-  g.addColorStop(0.55, "#0c2618");
+  g.addColorStop(0.55, "#2b0c0c");
   g.addColorStop(1, "#04120b");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
 
   const glow = ctx.createRadialGradient(W / 2, -120, 40, W / 2, 260, 900);
-  glow.addColorStop(0, "rgba(201,242,78,0.16)");
-  glow.addColorStop(1, "rgba(201,242,78,0)");
+  glow.addColorStop(0, "rgba(200,16,46,0.22)");
+  glow.addColorStop(1, "rgba(200,16,46,0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
   // garis kapur lapangan
-  ctx.strokeStyle = "rgba(238,246,240,0.09)";
+  ctx.strokeStyle = "rgba(246,236,230,0.09)";
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.arc(W / 2, H + 180, 520, Math.PI, 2 * Math.PI);
@@ -85,7 +85,7 @@ function paintBase(ctx, cfg, eyebrow) {
   ctx.font = `500 30px ${MONO}`;
   ctx.fillText((cfg.season || "").toUpperCase(), 66, 244);
 
-  ctx.strokeStyle = "rgba(238,246,240,0.2)";
+  ctx.strokeStyle = "rgba(246,236,230,0.2)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(64, 278);
@@ -94,7 +94,7 @@ function paintBase(ctx, cfg, eyebrow) {
 }
 
 function paintFooter(ctx, cfg, right) {
-  ctx.strokeStyle = "rgba(238,246,240,0.2)";
+  ctx.strokeStyle = "rgba(246,236,230,0.2)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(64, H - 118);
@@ -113,34 +113,43 @@ function paintFooter(ctx, cfg, right) {
 }
 
 function matchRow(ctx, y, h, home, away, mid, midColor, sub, winner) {
-  skewBar(ctx, 64, y, W - 128, h, "rgba(238,246,240,0.05)");
+  skewBar(ctx, 64, y, W - 128, h, "rgba(246,236,230,0.05)");
   skewBar(ctx, 64, y, 10, h, C.lime);
 
   const cx = W / 2;
-  const dy = sub ? -12 : 0;
   ctx.textBaseline = "middle";
+
+  // Ukuran & posisi ikut tinggi baris (rowH berubah sesuai jumlah match/matchday),
+  // dan sub-teks (tanggal/status) diberi jarak PASTI dari baris utama supaya tidak bertumpuk.
+  const nameSize = Math.min(44, h * 0.3);
+  const midSize = Math.min(mid.length > 4 ? 36 : 46, h * 0.3);
+  const subSize = sub ? Math.min(22, h * 0.14) : 0;
+  const gap = sub ? Math.max(8, h * 0.06) : 0;
+  const block = midSize + (sub ? subSize + gap : 0);
+  const mainY = y + (h - block) / 2 + midSize / 2;
+  const subY = mainY + midSize / 2 + gap + subSize / 2;
 
   ctx.textAlign = "right";
   ctx.fillStyle = winner === "h" ? C.lime : C.chalk;
-  const s1 = fitText(ctx, home, cx - 190, 44, DISP);
+  const s1 = fitText(ctx, home, cx - 190, nameSize, DISP);
   ctx.font = `400 ${s1}px ${DISP}`;
-  ctx.fillText(home.toUpperCase(), cx - 92, y + h / 2 + dy);
+  ctx.fillText(home.toUpperCase(), cx - 92, mainY);
 
   ctx.textAlign = "left";
   ctx.fillStyle = winner === "a" ? C.lime : C.chalk;
-  const s2 = fitText(ctx, away, cx - 190, 44, DISP);
+  const s2 = fitText(ctx, away, cx - 190, nameSize, DISP);
   ctx.font = `400 ${s2}px ${DISP}`;
-  ctx.fillText(away.toUpperCase(), cx + 92, y + h / 2 + dy);
+  ctx.fillText(away.toUpperCase(), cx + 92, mainY);
 
   ctx.textAlign = "center";
   ctx.fillStyle = midColor;
-  ctx.font = `700 ${mid.length > 4 ? 40 : 52}px ${MONO}`;
-  ctx.fillText(mid, cx, y + h / 2 + dy);
+  ctx.font = `700 ${midSize}px ${MONO}`;
+  ctx.fillText(mid, cx, mainY);
 
   if (sub) {
     ctx.fillStyle = C.slate;
-    ctx.font = `500 24px ${MONO}`;
-    ctx.fillText(sub.toUpperCase(), cx, y + h - 34);
+    ctx.font = `500 ${subSize}px ${MONO}`;
+    ctx.fillText(sub.toUpperCase(), cx, subY);
   }
   ctx.textAlign = "left";
 }
@@ -168,8 +177,8 @@ export function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, 
 
     rows.forEach((r, i) => {
       const y = top + i * rowH;
-      if (i === 0) skewBar(ctx, 64, y + 4, W - 128, rowH - 8, "rgba(201,242,78,0.14)");
-      else if (i % 2 === 0) skewBar(ctx, 64, y + 4, W - 128, rowH - 8, "rgba(238,246,240,0.04)");
+      if (i === 0) skewBar(ctx, 64, y + 4, W - 128, rowH - 8, "rgba(200,16,46,0.14)");
+      else if (i % 2 === 0) skewBar(ctx, 64, y + 4, W - 128, rowH - 8, "rgba(246,236,230,0.04)");
 
       ctx.textAlign = "left";
       ctx.fillStyle = i === 0 ? C.lime : C.slate;

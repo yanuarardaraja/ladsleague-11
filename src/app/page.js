@@ -67,6 +67,7 @@ function Klasemen({ table, fixtures }) {
           <span className="lb">Tim</span>
           <span className="lb" style={{ textAlign: "center" }}>M</span>
           <span className="lb" style={{ textAlign: "center" }}>M</span>
+          <span className="lb" style={{ textAlign: "center" }}>S</span>
           <span className="lb" style={{ textAlign: "center" }}>K</span>
           <span className="lb" style={{ textAlign: "center" }}>SG</span>
           <span className="lb" style={{ textAlign: "center" }}>Poin</span>
@@ -91,6 +92,7 @@ function Klasemen({ table, fixtures }) {
             </div>
             <span className="num">{r.P}</span>
             <span className="num">{r.W}</span>
+            <span className="num">{r.D}</span>
             <span className="num">{r.L}</span>
             <span className="num" style={{ color: r.GD > 0 ? "var(--lime)" : r.GD < 0 ? "var(--fuel)" : "var(--slate)" }}>
               {r.GD > 0 ? `+${r.GD}` : r.GD}

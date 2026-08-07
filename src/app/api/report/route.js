@@ -1,10 +1,15 @@
 import { db, getLeague } from "@/lib/supabase";
+import { isAdmin } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req) {
   try {
+    if (!(await isAdmin())) {
+      return Response.json({ ok: false, error: "Masuk sebagai admin dulu." }, { status: 401 });
+    }
+
     const league = await getLeague();
     const { fixtureId, homeScore, awayScore, reporter, source, aiNote, image, mediaType } = await req.json();
 

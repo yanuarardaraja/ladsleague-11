@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import {
   Topbar, useLeague, Loading, Empty, ErrorBox, post, shrinkImage,
   IcoUpload, IcoSpin, IcoSwap, IcoCheck, IcoWarn, IcoX,
@@ -87,11 +88,18 @@ export default function LaporPage() {
         {loading && <Loading />}
         {error && <ErrorBox error={error} />}
 
-        {data && open.length === 0 && (
+        {data && !data.admin && (
+          <Empty title="Hanya admin yang bisa lapor hasil"
+            hint="Kirim screenshot hasil match ke admin liga, atau masuk sebagai admin untuk input langsung.">
+            <Link href="/admin" className="btn go">Masuk sebagai admin</Link>
+          </Empty>
+        )}
+
+        {data && data.admin && open.length === 0 && (
           <Empty title="Semua match sudah selesai" hint="Tidak ada hasil yang perlu dilaporkan sekarang." />
         )}
 
-        {data && open.length > 0 && (
+        {data && data.admin && open.length > 0 && (
           <div className="stack">
             <div className="seg" data-n="2">
               <button className={`btn ${mode === "satu" ? "go" : ""}`} onClick={() => setMode("satu")}>Satu match</button>
