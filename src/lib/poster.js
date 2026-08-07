@@ -100,11 +100,12 @@ function paintBase(ctx, cfg, eyebrow, logo) {
   ctx.font = `500 30px ${MONO}`;
   ctx.fillText((cfg.season || "").toUpperCase(), 66, 244);
 
-  // logo — kanan atas, sejajar dengan tulisan nama liga, 1.5x tingginya
+  // logo — kanan atas: 1.5x tinggi teks dikurangi 10%, posisi digeser naik 15%
   if (logo && logo.width && logo.height) {
-    const logoH = ts * 1.5;
+    const logoH = ts * 1.5 * 0.9;
     const logoW = logoH * (logo.width / logo.height);
-    ctx.drawImage(logo, W - 64 - logoW, 190 - logoH / 2, logoW, logoH);
+    const logoCenterY = 190 * 0.85;
+    ctx.drawImage(logo, W - 64 - logoW, logoCenterY - logoH / 2, logoW, logoH);
   }
 
   ctx.strokeStyle = "rgba(246,236,230,0.2)";
