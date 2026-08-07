@@ -121,13 +121,15 @@ function matchRow(ctx, y, h, home, away, mid, midColor, sub, winner) {
 
   // Ukuran & posisi ikut tinggi baris (rowH berubah sesuai jumlah match/matchday),
   // dan sub-teks (tanggal/status) diberi jarak PASTI dari baris utama supaya tidak bertumpuk.
-  const nameSize = Math.min(44, h * 0.3);
-  const midSize = Math.min(mid.length > 4 ? 36 : 46, h * 0.3);
+  // Nama tim jadi elemen paling menonjol di baris (topSize), VS/skor sedikit lebih kecil.
+  const nameSize = Math.min(56, h * 0.38);
+  const midSize = Math.min(mid.length > 4 ? 36 : 46, h * 0.28);
   const subSize = sub ? Math.min(22, h * 0.14) : 0;
   const gap = sub ? Math.max(8, h * 0.06) : 0;
-  const block = midSize + (sub ? subSize + gap : 0);
-  const mainY = y + (h - block) / 2 + midSize / 2;
-  const subY = mainY + midSize / 2 + gap + subSize / 2;
+  const topSize = Math.max(nameSize, midSize);
+  const block = topSize + (sub ? subSize + gap : 0);
+  const mainY = y + (h - block) / 2 + topSize / 2;
+  const subY = mainY + topSize / 2 + gap + subSize / 2;
 
   ctx.textAlign = "right";
   ctx.fillStyle = winner === "h" ? C.lime : C.chalk;
