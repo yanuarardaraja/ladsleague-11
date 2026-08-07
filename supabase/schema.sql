@@ -83,3 +83,11 @@ on conflict (slug) do nothing;
 insert into storage.buckets (id, name, public)
 values ('evidence', 'evidence', true)
 on conflict (id) do nothing;
+
+-- ════════════════════════════════════════════════════════════
+--  Storage: bucket poster (dipublikasikan sebentar biar Instagram
+--  bisa fetch URL-nya saat posting otomatis dari /poster)
+-- ════════════════════════════════════════════════════════════
+insert into storage.buckets (id, name, public)
+values ('posters', 'posters', true)
+on conflict (id) do nothing;

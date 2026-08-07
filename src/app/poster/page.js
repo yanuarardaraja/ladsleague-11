@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { computeTable } from "@/lib/league";
 import { drawPoster } from "@/lib/poster";
 import {
-  Topbar, useLeague, Loading, Empty, ErrorBox, useToast,
-  IcoDownload, IcoShare, IcoLeft, IcoRight, IcoSpin,
+  Topbar, useLeague, Loading, Empty, ErrorBox, useToast, post,
+  IcoDownload, IcoShare, IcoLeft, IcoRight, IcoSpin, IcoUpload, IcoCheck, IcoX,
 } from "@/components/ui";
 
 export default function PosterPage() {
@@ -14,8 +14,12 @@ export default function PosterPage() {
   const [md, setMd] = useState(1);
   const [url, setUrl] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [showPost, setShowPost] = useState(false);
+  const [caption, setCaption] = useState("");
+  const [posting, setPosting] = useState(false);
   const [say, toast] = useToast();
   const canvasRef = useRef(null);
+  const isAdmin = !!data?.admin;
 
   const league = data?.league;
   const teams = useMemo(() => data?.teams || [], [data]);
@@ -67,6 +71,28 @@ export default function PosterPage() {
         await navigator.share({ files: [file], title: league?.name });
       } else download();
     } catch { download(); }
+  };
+
+  const defaultCaption = () => {
+    if (!league) return "";
+    const lines = [league.name];
+    lines.push(
+      kind === "klasemen" ? "Klasemen terkini" : `${kind === "hasil" ? "Hasil" : "Jadwal"} Matchday ${String(md).padStart(2, "0")}`
+    );
+    if (league.season) lines.push(league.season);
+    if (league.handle) lines.push(league.handle);
+    return lines.join("\n");
+  };
+
+  const openPost = () => { setCaption(defaultCaption()); setShowPost(true); };
+
+  const confirmPost = async () => {
+    if (!url) return;
+    setPosting(true);
+    const j = await post("/api/poster/publish", { image: url.split(",")[1], caption });
+    setPosting(false);
+    if (j.ok) { say("Terposting ke Instagram."); setShowPost(false); }
+    else say(j.error || "Gagal posting.", "bad");
   };
 
   return (
@@ -121,6 +147,31 @@ export default function PosterPage() {
               <button className="btn" onClick={share}><IcoShare /> Bagikan</button>
             </div>
             <p className="muted">Ukuran 1080 × 1350 px, pas untuk feed Instagram.</p>
+
+            {isAdmin && !showPost && (
+              <button className="btn go full" onClick={openPost} disabled={!url || busy}>
+                <IcoUpload /> Post ke Instagram
+              </button>
+            )}
+
+            {isAdmin && showPost && (
+              <div className="card pad stack">
+                <span className="lb">Caption</span>
+                <textarea className="in" value={caption} onChange={(e) => setCaption(e.target.value)}
+                  style={{ minHeight: 110 }} />
+                <p className="muted" style={{ margin: 0 }}>
+                  Poster akan langsung tayang di Instagram begitu ditekan Posting — pastikan sudah benar.
+                </p>
+                <div className="seg" data-n="2">
+                  <button className="btn" onClick={() => setShowPost(false)} disabled={posting}>
+                    <IcoX /> Batal
+                  </button>
+                  <button className="btn go" onClick={confirmPost} disabled={posting}>
+                    {posting ? <><IcoSpin className="spin" /> Posting…</> : <><IcoCheck /> Posting</>}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
