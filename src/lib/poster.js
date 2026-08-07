@@ -132,17 +132,22 @@ function matchRow(ctx, y, h, home, away, mid, midColor, sub, winner) {
   const mainY = y + (h - block) / 2 + topSize / 2;
   const subY = mainY + topSize / 2 + gap + subSize / 2;
 
-  ctx.textAlign = "right";
-  ctx.fillStyle = winner === "h" ? C.lime : C.chalk;
-  const s1 = fitText(ctx, home, cx - 190, nameSize, DISP);
-  ctx.font = `400 ${s1}px ${DISP}`;
-  ctx.fillText(home.toUpperCase(), cx - 92, mainY);
+  // Nama tim ditaruh di tengah kontainer masing-masing (kiri untuk kandang,
+  // kanan untuk tandang), bukan menempel ke VS di tengah.
+  const nameHalfW = cx - 190;
+  const homeCenterX = 86 + nameHalfW / 2;
+  const awayCenterX = W - 86 - nameHalfW / 2;
 
-  ctx.textAlign = "left";
+  ctx.textAlign = "center";
+  ctx.fillStyle = winner === "h" ? C.lime : C.chalk;
+  const s1 = fitText(ctx, home, nameHalfW, nameSize, DISP);
+  ctx.font = `400 ${s1}px ${DISP}`;
+  ctx.fillText(home.toUpperCase(), homeCenterX, mainY);
+
   ctx.fillStyle = winner === "a" ? C.lime : C.chalk;
-  const s2 = fitText(ctx, away, cx - 190, nameSize, DISP);
+  const s2 = fitText(ctx, away, nameHalfW, nameSize, DISP);
   ctx.font = `400 ${s2}px ${DISP}`;
-  ctx.fillText(away.toUpperCase(), cx + 92, mainY);
+  ctx.fillText(away.toUpperCase(), awayCenterX, mainY);
 
   ctx.textAlign = "center";
   ctx.fillStyle = midColor;
