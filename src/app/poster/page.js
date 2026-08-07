@@ -30,7 +30,7 @@ export default function PosterPage() {
     if (!league || !canvasRef.current) return;
     setBusy(true);
     try { await document.fonts.ready; } catch { /* pakai font sistem */ }
-    drawPoster(canvasRef.current, {
+    await drawPoster(canvasRef.current, {
       kind,
       cfg: league,
       list: fixtures.filter((f) => f.md === md),

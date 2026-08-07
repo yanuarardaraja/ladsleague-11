@@ -14,6 +14,20 @@ const C = {
 const DISP = `Anton, Impact, "Arial Black", sans-serif`;
 const MONO = `"JetBrains Mono", ui-monospace, Menlo, monospace`;
 
+let logoPromise = null;
+/** Muat logo sekali, dipakai ulang di setiap render poster. */
+function loadLogo() {
+  if (!logoPromise) {
+    logoPromise = new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = "/logo-lads.png";
+    });
+  }
+  return logoPromise;
+}
+
 function fitText(ctx, text, maxW, size, family, weight = "400") {
   let s = size;
   do {
@@ -38,7 +52,7 @@ function skewBar(ctx, x, y, w, h, fill, skew = 0.18) {
   ctx.restore();
 }
 
-function paintBase(ctx, cfg, eyebrow) {
+function paintBase(ctx, cfg, eyebrow, logo) {
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, "#06180f");
   g.addColorStop(0.55, "#2b0c0c");
@@ -76,7 +90,7 @@ function paintBase(ctx, cfg, eyebrow) {
 
   // nama liga
   const title = (cfg.name || "LIGA").toUpperCase();
-  const ts = fitText(ctx, title, 952, 108, DISP);
+  const ts = fitText(ctx, title, 800, 108, DISP);
   ctx.fillStyle = C.chalk;
   ctx.font = `400 ${ts}px ${DISP}`;
   ctx.fillText(title, 64, 190);
@@ -84,6 +98,13 @@ function paintBase(ctx, cfg, eyebrow) {
   ctx.fillStyle = C.slate;
   ctx.font = `500 30px ${MONO}`;
   ctx.fillText((cfg.season || "").toUpperCase(), 66, 244);
+
+  // logo — kanan atas
+  if (logo && logo.width && logo.height) {
+    const logoH = 88;
+    const logoW = logoH * (logo.width / logo.height);
+    ctx.drawImage(logo, W - 64 - logoW, 40, logoW, logoH);
+  }
 
   ctx.strokeStyle = "rgba(246,236,230,0.2)";
   ctx.lineWidth = 2;
@@ -156,13 +177,14 @@ function matchRow(ctx, y, h, home, away, mid, midColor, sub, winner) {
 }
 
 /** Gambar poster ke canvas. kind: 'jadwal' | 'hasil' | 'klasemen' */
-export function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, totalCount }) {
+export async function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, totalCount }) {
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
+  const logo = await loadLogo();
 
   if (kind === "klasemen") {
-    paintBase(ctx, cfg, "Klasemen");
+    paintBase(ctx, cfg, "Klasemen", logo);
     const rows = (table || []).slice(0, 20);
     const top = 330;
     const rowH = Math.min(74, (H - top - 170) / Math.max(rows.length, 1));
@@ -222,7 +244,7 @@ export function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, 
   }
 
   const isHasil = kind === "hasil";
-  paintBase(ctx, cfg, `${isHasil ? "Hasil" : "Jadwal"} · Matchday ${String(md).padStart(2, "0")}`);
+  paintBase(ctx, cfg, `${isHasil ? "Hasil" : "Jadwal"} · Matchday ${String(md).padStart(2, "0")}`, logo);
 
   const top = 330;
   const rowH = Math.min(140, (H - top - 170) / Math.max((list || []).length, 1));
