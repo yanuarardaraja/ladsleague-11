@@ -119,17 +119,15 @@ function matchRow(ctx, y, h, home, away, mid, midColor, sub, winner) {
   const cx = W / 2;
   ctx.textBaseline = "middle";
 
-  // Ukuran & posisi ikut tinggi baris (rowH berubah sesuai jumlah match/matchday).
-  // Nama tim dihitung dari SISA tinggi setelah jatah sub-teks (tanggal/status) —
-  // jadi bisa digedein banyak tanpa pernah numpuk atau meluber keluar baris.
+  // Nama tim + VS/skor duduk tepat di TENGAH VERTIKAL baris (bukan digeser ke atas
+  // demi sub-teks) — sub-teks (tanggal/status) menyusul di bawahnya dengan jarak pasti.
   const subSize = sub ? Math.min(22, h * 0.14) : 0;
   const gap = sub ? Math.max(8, h * 0.06) : 0;
-  const reserved = subSize + gap;
-  const nameSize = Math.min(84, (h - reserved) * 0.675);
+  const maxTopSize = Math.max(0, h - 2 * (gap + subSize));
+  const nameSize = Math.min(84, maxTopSize * 0.9);
   const midSize = Math.min(mid.length > 4 ? 36 : 46, h * 0.28);
   const topSize = Math.max(nameSize, midSize);
-  const block = topSize + reserved;
-  const mainY = y + (h - block) / 2 + topSize / 2;
+  const mainY = y + h / 2;
   const subY = mainY + topSize / 2 + gap + subSize / 2;
 
   // Nama tim ditaruh di tengah kontainer masing-masing (kiri untuk kandang,
