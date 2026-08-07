@@ -125,7 +125,7 @@ function matchRow(ctx, y, h, home, away, mid, midColor, sub, winner) {
   const subSize = sub ? Math.min(22, h * 0.14) : 0;
   const gap = sub ? Math.max(8, h * 0.06) : 0;
   const reserved = subSize + gap;
-  const nameSize = Math.min(112, (h - reserved) * 0.9);
+  const nameSize = Math.min(84, (h - reserved) * 0.675);
   const midSize = Math.min(mid.length > 4 ? 36 : 46, h * 0.28);
   const topSize = Math.max(nameSize, midSize);
   const block = topSize + reserved;
@@ -165,9 +165,16 @@ export function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, 
 
   if (kind === "klasemen") {
     paintBase(ctx, cfg, "Klasemen");
-    const rows = (table || []).slice(0, 12);
+    const rows = (table || []).slice(0, 20);
     const top = 330;
     const rowH = Math.min(74, (H - top - 170) / Math.max(rows.length, 1));
+
+    // Ukuran font ikut rowH — di 20 tim baris jadi kecil, jadi dibatasi proporsional
+    // supaya tidak numpuk (koefisien dipilih agar sama seperti sebelumnya saat rowH=74).
+    const posSize = Math.min(26, rowH * 0.35);
+    const nameCap = Math.min(36, rowH * 0.49);
+    const statSize = Math.min(24, rowH * 0.32);
+    const ptsSize = Math.min(38, rowH * 0.51);
 
     const colM = W - 500, colW = W - 422, colS = W - 344, colK = W - 266, colSG = W - 188, colPts = W - 110;
 
@@ -190,16 +197,16 @@ export function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, 
 
       ctx.textAlign = "left";
       ctx.fillStyle = i === 0 ? C.lime : C.slate;
-      ctx.font = `700 26px ${MONO}`;
+      ctx.font = `700 ${posSize}px ${MONO}`;
       ctx.fillText(String(i + 1).padStart(2, "0"), 82, y + rowH / 2);
 
       ctx.fillStyle = C.chalk;
-      const s = fitText(ctx, r.name, 400, 36, DISP);
+      const s = fitText(ctx, r.name, 400, nameCap, DISP);
       ctx.font = `400 ${s}px ${DISP}`;
       ctx.fillText(r.name.toUpperCase(), 150, y + rowH / 2);
 
       ctx.textAlign = "center";
-      ctx.font = `500 24px ${MONO}`;
+      ctx.font = `500 ${statSize}px ${MONO}`;
       ctx.fillStyle = C.slate;
       ctx.fillText(String(r.P), colM, y + rowH / 2);
       ctx.fillText(String(r.W), colW, y + rowH / 2);
@@ -208,7 +215,7 @@ export function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, 
       ctx.fillStyle = r.GD > 0 ? C.lime : r.GD < 0 ? C.fuel : C.slate;
       ctx.fillText(r.GD > 0 ? `+${r.GD}` : String(r.GD), colSG, y + rowH / 2);
       ctx.fillStyle = i === 0 ? C.lime : C.chalk;
-      ctx.font = `700 38px ${MONO}`;
+      ctx.font = `700 ${ptsSize}px ${MONO}`;
       ctx.fillText(String(r.Pts), colPts, y + rowH / 2);
     });
 
