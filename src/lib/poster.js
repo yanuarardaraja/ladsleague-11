@@ -119,15 +119,16 @@ function matchRow(ctx, y, h, home, away, mid, midColor, sub, winner) {
   const cx = W / 2;
   ctx.textBaseline = "middle";
 
-  // Ukuran & posisi ikut tinggi baris (rowH berubah sesuai jumlah match/matchday),
-  // dan sub-teks (tanggal/status) diberi jarak PASTI dari baris utama supaya tidak bertumpuk.
-  // Nama tim jadi elemen paling menonjol di baris (topSize), VS/skor sedikit lebih kecil.
-  const nameSize = Math.min(56, h * 0.38);
-  const midSize = Math.min(mid.length > 4 ? 36 : 46, h * 0.28);
+  // Ukuran & posisi ikut tinggi baris (rowH berubah sesuai jumlah match/matchday).
+  // Nama tim dihitung dari SISA tinggi setelah jatah sub-teks (tanggal/status) —
+  // jadi bisa digedein banyak tanpa pernah numpuk atau meluber keluar baris.
   const subSize = sub ? Math.min(22, h * 0.14) : 0;
   const gap = sub ? Math.max(8, h * 0.06) : 0;
+  const reserved = subSize + gap;
+  const nameSize = Math.min(112, (h - reserved) * 0.9);
+  const midSize = Math.min(mid.length > 4 ? 36 : 46, h * 0.28);
   const topSize = Math.max(nameSize, midSize);
-  const block = topSize + (sub ? subSize + gap : 0);
+  const block = topSize + reserved;
   const mainY = y + (h - block) / 2 + topSize / 2;
   const subY = mainY + topSize / 2 + gap + subSize / 2;
 
@@ -168,14 +169,19 @@ export function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, 
     const top = 330;
     const rowH = Math.min(74, (H - top - 170) / Math.max(rows.length, 1));
 
+    const colM = W - 500, colW = W - 422, colS = W - 344, colK = W - 266, colSG = W - 188, colPts = W - 110;
+
     ctx.fillStyle = C.slate;
-    ctx.font = `500 22px ${MONO}`;
+    ctx.font = `500 20px ${MONO}`;
     ctx.textAlign = "left";
     ctx.fillText("POS   TIM", 76, top - 26);
     ctx.textAlign = "center";
-    ctx.fillText("M", W - 300, top - 26);
-    ctx.fillText("SG", W - 210, top - 26);
-    ctx.fillText("POIN", W - 110, top - 26);
+    ctx.fillText("M", colM, top - 26);
+    ctx.fillText("M", colW, top - 26);
+    ctx.fillText("S", colS, top - 26);
+    ctx.fillText("K", colK, top - 26);
+    ctx.fillText("SG", colSG, top - 26);
+    ctx.fillText("POIN", colPts, top - 26);
 
     rows.forEach((r, i) => {
       const y = top + i * rowH;
@@ -188,19 +194,22 @@ export function drawPoster(canvas, { kind, cfg, list, table, nm, md, doneCount, 
       ctx.fillText(String(i + 1).padStart(2, "0"), 82, y + rowH / 2);
 
       ctx.fillStyle = C.chalk;
-      const s = fitText(ctx, r.name, W - 500, 40, DISP);
+      const s = fitText(ctx, r.name, 400, 36, DISP);
       ctx.font = `400 ${s}px ${DISP}`;
       ctx.fillText(r.name.toUpperCase(), 150, y + rowH / 2);
 
       ctx.textAlign = "center";
-      ctx.font = `500 26px ${MONO}`;
+      ctx.font = `500 24px ${MONO}`;
       ctx.fillStyle = C.slate;
-      ctx.fillText(String(r.P), W - 300, y + rowH / 2);
+      ctx.fillText(String(r.P), colM, y + rowH / 2);
+      ctx.fillText(String(r.W), colW, y + rowH / 2);
+      ctx.fillText(String(r.D), colS, y + rowH / 2);
+      ctx.fillText(String(r.L), colK, y + rowH / 2);
       ctx.fillStyle = r.GD > 0 ? C.lime : r.GD < 0 ? C.fuel : C.slate;
-      ctx.fillText(r.GD > 0 ? `+${r.GD}` : String(r.GD), W - 210, y + rowH / 2);
+      ctx.fillText(r.GD > 0 ? `+${r.GD}` : String(r.GD), colSG, y + rowH / 2);
       ctx.fillStyle = i === 0 ? C.lime : C.chalk;
-      ctx.font = `700 40px ${MONO}`;
-      ctx.fillText(String(r.Pts), W - 110, y + rowH / 2);
+      ctx.font = `700 38px ${MONO}`;
+      ctx.fillText(String(r.Pts), colPts, y + rowH / 2);
     });
 
     paintFooter(ctx, cfg, `${doneCount}/${totalCount} match`);
