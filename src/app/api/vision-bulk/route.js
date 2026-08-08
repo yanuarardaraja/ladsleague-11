@@ -45,7 +45,7 @@ Aturan:
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 500,
+        max_tokens: 1024,
         messages: [
           {
             role: "user",
@@ -69,7 +69,12 @@ Aturan:
 
     const data = await r.json();
     const text = (data.content || []).filter((c) => c.type === "text").map((c) => c.text).join("\n");
-    const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error("Vision-bulk: tidak ada JSON di balasan model. stop_reason:", data.stop_reason, "text:", text.slice(0, 500));
+      throw new Error("Model tidak mengembalikan JSON yang valid.");
+    }
+    const parsed = JSON.parse(jsonMatch[0]);
 
     let result = { found: false, note: parsed.note || "Tidak ada kandidat yang cocok." };
     if (
