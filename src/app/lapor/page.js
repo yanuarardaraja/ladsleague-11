@@ -18,7 +18,6 @@ export default function LaporPage() {
   const [read, setRead] = useState(null);
   const [hs, setHs] = useState("");
   const [as, setAs] = useState("");
-  const [reporter, setReporter] = useState("");
   const [msg, setMsg] = useState(null);
   const fileRef = useRef(null);
 
@@ -71,7 +70,6 @@ export default function LaporPage() {
     const j = await post("/api/report", {
       fixtureId: sel,
       homeScore: hs, awayScore: as,
-      reporter,
       source: read?.found ? "ai" : "manual",
       aiNote: read?.found ? `AI · keyakinan ${read.confidence || "-"}` : "Diketik manual",
       image: imageB64, mediaType: "image/jpeg",
@@ -182,12 +180,6 @@ export default function LaporPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="lb" htmlFor="rep">Nama pelapor</label>
-                    <input id="rep" className="in" style={{ marginTop: 6 }} placeholder="Nama kamu"
-                      value={reporter} onChange={(e) => setReporter(e.target.value)} />
-                  </div>
-
                   <button className="btn go full" onClick={submit} disabled={sending || hs === "" || as === ""}>
                     {sending ? <><IcoSpin className="spin" /> Mengirim…</> : <><IcoCheck /> Kirim skor</>}
                   </button>
@@ -217,7 +209,6 @@ function BulkLapor({ open, nm, reload }) {
   const fileRef = useRef(null);
   const nextId = useRef(0);
   const [rows, setRows] = useState([]);
-  const [reporter, setReporter] = useState("");
   const [sending, setSending] = useState(false);
   const [summary, setSummary] = useState(null);
 
@@ -284,7 +275,6 @@ function BulkLapor({ open, nm, reload }) {
         fixtureId: row.fixtureId,
         homeScore: row.homeScore,
         awayScore: row.awayScore,
-        reporter,
         source: row.status === "ok" ? "ai" : "manual",
         aiNote: row.status === "ok" ? `AI · keyakinan ${row.confidence || "-"}` : "Dicocokkan manual",
         image: row.b64,
@@ -313,12 +303,6 @@ function BulkLapor({ open, nm, reload }) {
 
       {rows.length > 0 && (
         <>
-          <div>
-            <label className="lb" htmlFor="bulk-rep">Nama pelapor</label>
-            <input id="bulk-rep" className="in" style={{ marginTop: 6 }} placeholder="Nama kamu"
-              value={reporter} onChange={(e) => setReporter(e.target.value)} />
-          </div>
-
           {rows.map((r) => {
             const chosen = open.find((f) => f.id === r.fixtureId);
             const isDupe = r.fixtureId && dupes.has(r.fixtureId);
