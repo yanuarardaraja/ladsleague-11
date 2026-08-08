@@ -45,7 +45,11 @@ Aturan:
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 1024,
+        max_tokens: 2048,
+        // claude-sonnet-5 thinks adaptively by default even tanpa param "thinking" —
+        // baca skor tidak butuh reasoning dalam, jadi effort rendah supaya budget
+        // token tidak habis untuk thinking dan menyisakan 0 buat teks/JSON.
+        output_config: { effort: "low" },
         messages: [
           {
             role: "user",
