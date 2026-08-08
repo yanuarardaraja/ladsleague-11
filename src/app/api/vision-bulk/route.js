@@ -3,6 +3,19 @@ export const dynamic = "force-dynamic";
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 
+const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** Kecocokan nama kasar — dipakai buat nebak kandang/tandang dari kiri/kanan hasil baca AI. */
+function similarity(a, b) {
+  const na = norm(a), nb = norm(b);
+  if (!na || !nb) return 0;
+  if (na === nb) return 3;
+  if (na.includes(nb) || nb.includes(na)) return 2;
+  let i = 0;
+  while (i < na.length && i < nb.length && na[i] === nb[i]) i++;
+  return i > 2 ? 1 : 0;
+}
+
 export async function POST(req) {
   try {
     const key = process.env.ANTHROPIC_API_KEY;
@@ -19,19 +32,22 @@ export async function POST(req) {
       return Response.json({ ok: false, error: "Tidak ada match yang masih terbuka." }, { status: 400 });
     }
 
-    const list = candidates.map((c, i) => `${i}. Kandang "${c.home}" vs Tandang "${c.away}"`).join("\n");
+    const list = candidates.map((c, i) => `${i}. "${c.home}" vs "${c.away}"`).join("\n");
 
     const prompt = `Ini screenshot layar hasil pertandingan game eFootball Mobile.
-Baca nama tim di papan skor dan skor akhirnya. Cocokkan nama tim yang terbaca ke SALAH SATU
-kandidat match di bawah (penulisan nama boleh sedikit berbeda/singkatan, pilih yang paling mendekati):
+Baca dua nama tim di papan skor persis seperti posisinya (kiri dan kanan) dan skor akhir masing-masing.
+Kandang/tandang TIDAK penting — cukup baca apa adanya sesuai posisi kiri-kanan di gambar.
+Cocokkan pasangan nama tim itu ke SALAH SATU kandidat match di bawah (penulisan nama boleh sedikit
+berbeda/singkatan, pilih yang paling mendekati, urutan kiri-kanan tidak harus sama dengan urutan kandidat):
 ${list}
 
 Balas HANYA JSON, tanpa markdown dan tanpa penjelasan:
-{"found":true,"candidateIndex":0,"homeScore":0,"awayScore":0,"confidence":"tinggi","note":""}
+{"found":true,"candidateIndex":0,"leftName":"","rightName":"","leftScore":0,"rightScore":0,"confidence":"tinggi","note":""}
 
 Aturan:
-- candidateIndex = nomor kandidat di atas yang cocok dengan tim di gambar.
-- homeScore/awayScore ikut posisi Kandang/Tandang pada kandidat itu, BUKAN posisi kiri/kanan di gambar.
+- candidateIndex = nomor kandidat di atas yang cocok dengan dua tim di gambar.
+- leftName/rightName = nama tim persis seperti terbaca di gambar, kiri dan kanan.
+- leftScore/rightScore = skor sesuai posisi kiri/kanan itu, BUKAN sesuai kandang/tandang kandidat.
 - found=false kalau skor tidak terlihat jelas, gambar bukan hasil pertandingan, atau tidak ada kandidat yang cocok.
 - confidence salah satu dari: tinggi, sedang, rendah.
 - note: satu kalimat pendek bahasa Indonesia (jelaskan kalau ragu atau tidak ketemu).`;
@@ -81,20 +97,26 @@ Aturan:
     const parsed = JSON.parse(jsonMatch[0]);
 
     let result = { found: false, note: parsed.note || "Tidak ada kandidat yang cocok." };
+    const candidate = Number.isInteger(parsed.candidateIndex) ? candidates[parsed.candidateIndex] : null;
     if (
       parsed.found &&
-      Number.isInteger(parsed.candidateIndex) &&
-      candidates[parsed.candidateIndex] &&
-      Number.isInteger(parsed.homeScore) &&
-      Number.isInteger(parsed.awayScore) &&
-      parsed.homeScore >= 0 &&
-      parsed.awayScore >= 0
+      candidate &&
+      Number.isInteger(parsed.leftScore) &&
+      Number.isInteger(parsed.rightScore) &&
+      parsed.leftScore >= 0 &&
+      parsed.rightScore >= 0
     ) {
+      // Kandang/tandang ditentukan lewat kecocokan nama (kode, bukan AI) — leftName/rightName
+      // cuma posisi kiri-kanan di gambar, tidak berarti kandang/tandang.
+      const direct = similarity(parsed.leftName, candidate.home) + similarity(parsed.rightName, candidate.away);
+      const swapped = similarity(parsed.leftName, candidate.away) + similarity(parsed.rightName, candidate.home);
+      const isSwapped = swapped > direct;
+
       result = {
         found: true,
         candidateIndex: parsed.candidateIndex,
-        homeScore: parsed.homeScore,
-        awayScore: parsed.awayScore,
+        homeScore: isSwapped ? parsed.rightScore : parsed.leftScore,
+        awayScore: isSwapped ? parsed.leftScore : parsed.rightScore,
         confidence: parsed.confidence || "sedang",
         note: parsed.note || "",
       };
